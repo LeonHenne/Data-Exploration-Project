@@ -31,26 +31,27 @@ def data_cleaning(df):
 
 def splitting_dataset(df : pd.DataFrame):
 
-    X_train=df.drop('Survived', axis = 1)
+    x_train=df.drop('Survived', axis = 1)
     y_train=df['Survived']
     
-    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, train_size=0.8, random_state=42)
-    X_train, X_validate, y_train, y_validate = train_test_split(X_train, y_train, test_size=0.25,train_size=0.75, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, train_size=0.8, random_state=42)
+    x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.25,train_size=0.75, random_state=42)
 
-    return X_train,X_validate, X_test, y_train,y_validate, y_test
+    return x_train,x_validate, x_test, y_train,y_validate, y_test
 
 def feature_preperation(df):
-    # transforming feature types TODO: sex into 0 and 1 / ( age in range between 0 and 1 )
+    # transforming feature types TODO: sex into 0 and 1 / ( age in range between 0 and 1 through / 100)
     df["Sex"] = df["Sex"].map(dict({'male': 1,'female': 0}))
+    
     return df
     
-def train_knn(X_train,y_train,knn_param):
+def train_knn(x_train,y_train,knn_param):
     knn_model=KNeighborsClassifier(n_neighbors=knn_param)
-    knn_model.fit(X_train, y_train)
+    knn_model.fit(x_train, y_train)
     return knn_model
 
-def evaluate_model(model: KNeighborsClassifier,X_validate, y_validate):
-    y_predicted = knn_model.predict(X_validate)
+def evaluate_model(model: KNeighborsClassifier,x_validate, y_validate):
+    y_predicted = model.predict(x_validate)
     accuracy = accuracy_score(y_validate,y_predicted)
     print(accuracy)
     return accuracy
@@ -58,7 +59,7 @@ def evaluate_model(model: KNeighborsClassifier,X_validate, y_validate):
 df = load_data()
 df_cleaned = data_cleaning(df)
 df_preped = feature_preperation(df_cleaned)
-X_train,X_validate, X_test, y_train,y_validate, y_test= splitting_dataset(df)
+x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df)
 
-knn_model = train_knn(X_train,y_train,1)
-accuracy = evaluate_model(knn_model,X_validate, y_validate)
+knn_model = train_knn(x_train,y_train,1)
+accuracy = evaluate_model(knn_model,x_validate, y_validate)
