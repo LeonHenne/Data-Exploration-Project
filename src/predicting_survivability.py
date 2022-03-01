@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 from urllib.parse import urlparse
 import mlflow
 
@@ -50,27 +50,50 @@ def train_knn(x_train,y_train,knn_param):
     knn_model.fit(x_train, y_train)
     return knn_model
 
-def validation_evaluate_model(model: KNeighborsClassifier,x_validate, y_validate):
-    
+def validation_evaluate_model(model: KNeighborsClassifier):
+    mlflow.log_param("Used_evaluation_dataset", "validation_dataset")
     y_predicted = model.predict(x_validate)
     accuracy = accuracy_score(y_validate,y_predicted)
+    matrix = confusion_matrix(y_validate,y_predicted)
+    print(str(knn_parameter)+" "+ str(accuracy))
+    return accuracy, matrix
 
-    print(accuracy)
-    return accuracy
+def test_evaluate_model(model: KNeighborsClassifier):
+    mlflow.log_param("Used_evaluation_dataset", "test_dataset")
+    y_predicted = model.predict(x_test)
+    accuracy = accuracy_score(y_test,y_predicted)
+    matrix = confusion_matrix(y_test,y_predicted)
+    print(str(knn_parameter) + str(accuracy))
+    return accuracy, matrix
+
 
 df = load_data()
 df_cleaned = data_cleaning(df)
 df_preped = feature_preperation(df_cleaned)
 x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df)
-for knn_parameter in range(1,26):
+for knn_parameter in range(1,2):
     with mlflow.start_run():
+        #logging the model parameter
         mlflow.log_param("Random_state", 42)
         mlflow.log_param("Trainset_size", len(x_train))
         mlflow.log_param("Validationset_size",len(x_validate))
         knn_hyperparameter = knn_parameter
         mlflow.log_param("Number_of_selected_neighbours", knn_hyperparameter)
+
+        #training and evaluating the KNN model
         knn_model = train_knn(x_train,y_train,knn_hyperparameter)
-        accuracy = validation_evaluate_model(knn_model,x_validate, y_validate)
+        accuracy, matrix = validation_evaluate_model(knn_model)
+
+        # logging evaluation metrics and the model itself
         mlflow.log_metric("Accuracy",accuracy)
+        true_positive = matrix[0][0]
+        true_negative = matrix[1][1]
+        false_positive = matrix[0][1]
+        false_negative = matrix[1][0]
+        mlflow.log_metric("true_positive", true_positive)
+        mlflow.log_metric("true_negative", true_negative)
+        mlflow.log_metric("false_positive", false_positive)
+        mlflow.log_metric("false_negative", false_negative)
         mlflow.sklearn.log_model(knn_model, "knn_model")
+
         mlflow.end_run()
