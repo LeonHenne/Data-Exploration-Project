@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/leonhenne/Repositories/git-dhbw/Data-Exploration-Project/mlruns/0/f330bfaae9ad45a4bea2fc2b53847eeb/artifacts
+end_time: 1646124456797
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: f330bfaae9ad45a4bea2fc2b53847eeb
+run_uuid: f330bfaae9ad45a4bea2fc2b53847eeb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1646124449428
+status: 3
+tags: []
+user_id: leonhenne

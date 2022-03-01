@@ -4,7 +4,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
-
+from urllib.parse import urlparse
+import mlflow
 
 
 def load_data():
@@ -33,7 +34,6 @@ def splitting_dataset(df : pd.DataFrame):
 
     x_train=df.drop('Survived', axis = 1)
     y_train=df['Survived']
-    
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, train_size=0.8, random_state=42)
     x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.25,train_size=0.75, random_state=42)
 
@@ -50,9 +50,11 @@ def train_knn(x_train,y_train,knn_param):
     knn_model.fit(x_train, y_train)
     return knn_model
 
-def evaluate_model(model: KNeighborsClassifier,x_validate, y_validate):
+def validation_evaluate_model(model: KNeighborsClassifier,x_validate, y_validate):
+    
     y_predicted = model.predict(x_validate)
     accuracy = accuracy_score(y_validate,y_predicted)
+
     print(accuracy)
     return accuracy
 
@@ -60,6 +62,15 @@ df = load_data()
 df_cleaned = data_cleaning(df)
 df_preped = feature_preperation(df_cleaned)
 x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df)
-
-knn_model = train_knn(x_train,y_train,1)
-accuracy = evaluate_model(knn_model,x_validate, y_validate)
+for knn_parameter in range(1,26):
+    with mlflow.start_run():
+        mlflow.log_param("Random_state", 42)
+        mlflow.log_param("Trainset_size", len(x_train))
+        mlflow.log_param("Validationset_size",len(x_validate))
+        knn_hyperparameter = knn_parameter
+        mlflow.log_param("Number_of_selected_neighbours", knn_hyperparameter)
+        knn_model = train_knn(x_train,y_train,knn_hyperparameter)
+        accuracy = validation_evaluate_model(knn_model,x_validate, y_validate)
+        mlflow.log_metric("Accuracy",accuracy)
+        mlflow.sklearn.log_model(knn_model, "knn_model")
+        mlflow.end_run()
