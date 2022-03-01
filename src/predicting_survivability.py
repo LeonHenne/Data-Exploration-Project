@@ -1,10 +1,7 @@
-from re import X
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
-from urllib.parse import urlparse
 import mlflow
 
 
@@ -36,7 +33,8 @@ def splitting_dataset(df : pd.DataFrame):
     y_train=df['Survived']
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, train_size=0.8, random_state=42)
     x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.25,train_size=0.75, random_state=42)
-
+    test_data = pd.concat([x_test, y_test], axis= 1)
+    test_data.to_csv("data/Titanic_test_dataset.csv", index=False)
     return x_train,x_validate, x_test, y_train,y_validate, y_test
 
 def feature_preperation(df):
@@ -70,7 +68,8 @@ def test_evaluate_model(model: KNeighborsClassifier):
 df = load_data()
 df_cleaned = data_cleaning(df)
 df_preped = feature_preperation(df_cleaned)
-x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df)
+x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df_preped)
+
 for knn_parameter in range(1,2):
     with mlflow.start_run():
         #logging the model parameter
@@ -95,5 +94,5 @@ for knn_parameter in range(1,2):
         mlflow.log_metric("false_positive", false_positive)
         mlflow.log_metric("false_negative", false_negative)
         mlflow.sklearn.log_model(knn_model, "knn_model")
-
+        
         mlflow.end_run()
