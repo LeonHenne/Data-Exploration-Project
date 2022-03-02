@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
 import mlflow
 
 
@@ -38,10 +39,19 @@ def splitting_dataset(df : pd.DataFrame):
     return x_train,x_validate, x_test, y_train,y_validate, y_test
 
 def feature_preperation(df):
-    # transforming feature types TODO: sex into 0 and 1 / ( age in range between 0 and 1 through / 100)
+    # transforming feature type sex into 0 and 1 instead of female and male
     df["Sex"] = df["Sex"].map(dict({'male': 1,'female': 0}))
     
     return df
+
+def feature_scaling():
+    scaler= StandardScaler()
+    scaler.fit(x_train)
+    scaled_x_train= scaler.transform(x_train)
+    scaled_x_validate = scaler.transform(x_validate)
+    scaled_x_test= scaler.transform(x_test)
+
+    return scaled_x_train,scaled_x_validate,scaled_x_test
     
 def train_knn(x_train,y_train,knn_param):
     knn_model=KNeighborsClassifier(n_neighbors=knn_param)
@@ -69,6 +79,7 @@ df = load_data()
 df_cleaned = data_cleaning(df)
 df_preped = feature_preperation(df_cleaned)
 x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df_preped)
+x_train,x_validate, x_test = feature_scaling()
 
 for knn_parameter in range(1,2):
     with mlflow.start_run():
@@ -94,5 +105,5 @@ for knn_parameter in range(1,2):
         mlflow.log_metric("false_positive", false_positive)
         mlflow.log_metric("false_negative", false_negative)
         mlflow.sklearn.log_model(knn_model, "knn_model")
-        
+
         mlflow.end_run()
