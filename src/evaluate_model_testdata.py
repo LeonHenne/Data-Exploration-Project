@@ -1,4 +1,3 @@
-from pyexpat import model
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -58,7 +57,7 @@ def load_model(model_uri):
 
 model_run_id = "d51c7a19574240ecb8e03559d9b61a82"
 
-test_df = pd.read_csv("data/Titanic_test_dataset.csv")
+test_df = pd.read_csv("https://gist.githubusercontent.com/Inwernos/718cbf951b7c5bfc7060801824e64a3c/raw/42fec3053c3532fd521403302bc9e00714e3a26d/Titanic_test_dataset.csv")
 x_test=test_df.drop('Survived', axis = 1)
 scaler= StandardScaler()
 scaler.fit(x_test)
