@@ -2,12 +2,13 @@ from pyexpat import model
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
 import mlflow
 
 def test_evaluate_model(model_run_id):
     #calling the model loading fuction
     model = load_model(model_run_id)
-
+    mlflow.set_experiment("Model_testing")
     #reading the model parameters
     log_params(model_run_id)
     #using the loaded model to predict the test data
@@ -28,11 +29,11 @@ def test_evaluate_model(model_run_id):
     mlflow.log_metric("false_positive", false_positive)
     mlflow.log_metric("false_negative", false_negative)
     mlflow.sklearn.log_model(model, "knn_model")
-
+    print(accuracy)
     return accuracy, matrix
 
 def log_params(run_id):
-
+    mlflow.log_param("loaded_model",run_id)
     mlflow.log_param("Used_evaluation_dataset", "test_dataset")
     mlflow.log_param("Random_state",42)
     mlflow.log_param("Validationset_size", len(y_test))
@@ -55,10 +56,13 @@ def load_model(model_uri):
     
     return loaded_model
 
-model_run_id = "6a1246e23bc84ca2a1b1054999c4a81b"
+model_run_id = "d51c7a19574240ecb8e03559d9b61a82"
 
 test_df = pd.read_csv("data/Titanic_test_dataset.csv")
 x_test=test_df.drop('Survived', axis = 1)
+scaler= StandardScaler()
+scaler.fit(x_test)
+x_test= scaler.transform(x_test)
 y_test=test_df['Survived']
 
 accuracy, matrix = test_evaluate_model(model_run_id)

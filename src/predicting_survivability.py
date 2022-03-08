@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 import mlflow
 
+# Data Exploration Project Code
 
 def load_data():
     #loading the dataset
@@ -81,7 +82,7 @@ df_preped = feature_preperation(df_cleaned)
 x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df_preped)
 x_train,x_validate, x_test = feature_scaling()
 
-for knn_parameter in range(1,2):
+for knn_parameter in range(1,len(x_validate)):
     with mlflow.start_run():
         #logging the model parameter
         mlflow.log_param("Random_state", 42)
