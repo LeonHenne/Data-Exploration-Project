@@ -33,6 +33,7 @@ def splitting_dataset(df : pd.DataFrame):
 
     x_train=df.drop('Survived', axis = 1)
     y_train=df['Survived']
+    # Splitting the data twice into 60% training data, 20% validation data and 20% test data
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, train_size=0.8, random_state=42)
     x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.25,train_size=0.75, random_state=42)
     test_data = pd.concat([x_test, y_test], axis= 1)
@@ -82,7 +83,7 @@ df_preped = feature_preperation(df_cleaned)
 x_train,x_validate, x_test, y_train,y_validate, y_test= splitting_dataset(df_preped)
 x_train,x_validate, x_test = feature_scaling()
 
-for knn_parameter in range(1,len(x_validate)):
+for knn_parameter in range(1,len(x_train)+1):
     with mlflow.start_run():
         #logging the model parameter
         mlflow.log_param("Random_state", 42)
