@@ -1,10 +1,12 @@
 import pandas as pd
+import numpy as np
+from typing import Tuple
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 import mlflow
 
-def test_evaluate_model(model_run_id):
-    '''evaluating a given model on test data'''
+def test_evaluate_model(model_run_id : str) -> Tuple[float,np.ndarray]:
+    '''evaluating a given model on test data. Printing hyperparameter and accuracy'''
     #calling the model loading fuction
     model = load_model(model_run_id)
 
@@ -12,7 +14,7 @@ def test_evaluate_model(model_run_id):
     mlflow.set_experiment("Model_testing")
     
     #reading the model parameters
-    log_params(model_run_id)
+    knn_hyperparameter = log_params(model_run_id)
     #using the loaded model to predict the test data
     y_predicted = model.predict(x_test)
 
@@ -31,10 +33,12 @@ def test_evaluate_model(model_run_id):
     mlflow.log_metric("false_positive", false_positive)
     mlflow.log_metric("false_negative", false_negative)
     mlflow.sklearn.log_model(model, "knn_model")
-    print(accuracy)
+
+    print(str(knn_hyperparameter) +" "+str(accuracy))
+
     return accuracy, matrix
 
-def log_params(run_id):
+def log_params(run_id : str):
     '''logging different parameters of the model performance run on test data'''
 
     mlflow.log_param("loaded_model",run_id)
@@ -47,26 +51,28 @@ def log_params(run_id):
 
     with open(model_parameter_file+"Number_of_selected_neighbours","r") as f:
         model_kneighbours = f.read()
-    print(model_kneighbours)
+    
     mlflow.log_param("Number_of_selected_neighbours", model_kneighbours)
 
     with open(model_parameter_file+"Trainset_size","r") as f:
         model_testset_size = f.read()
-    print(model_testset_size)
+
     mlflow.log_param("Trainset_size", model_testset_size)
 
-def load_model(model_uri):
-    '''loading a model from the mlruns folder, given a run_id'''
+    return model_kneighbours
+
+def load_model(model_run_id: str) -> mlflow.pyfunc.PyFuncModel:
+    '''loading a model from the mlruns folder, given a model_run_id'''
 
     logged_model = "runs:/"+model_run_id+'/knn_model'
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pyfunc.load_model(logged_model)
-    
+
     return loaded_model
 
-def scaling_data(test_df):
+def scaling_data(test_df : pd.DataFrame) -> pd.DataFrame:
     '''preparing and scaling the test data'''
-    
+
     x_test=test_df.drop('Survived', axis = 1)
     #using the sklearn standardscaler
     scaler= StandardScaler()
