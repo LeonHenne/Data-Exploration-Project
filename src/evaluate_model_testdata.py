@@ -1,13 +1,16 @@
 import pandas as pd
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 import mlflow
 
 def test_evaluate_model(model_run_id):
+    '''evaluating a given model on test data'''
     #calling the model loading fuction
     model = load_model(model_run_id)
+
+    # setting the experiment to store the test runs separately
     mlflow.set_experiment("Model_testing")
+    
     #reading the model parameters
     log_params(model_run_id)
     #using the loaded model to predict the test data
@@ -32,10 +35,14 @@ def test_evaluate_model(model_run_id):
     return accuracy, matrix
 
 def log_params(run_id):
+    '''logging different parameters of the model performance run on test data'''
+
     mlflow.log_param("loaded_model",run_id)
     mlflow.log_param("Used_evaluation_dataset", "test_dataset")
     mlflow.log_param("Random_state",42)
     mlflow.log_param("Validationset_size", len(y_test))
+    
+    # creating the path to the param folder of a given run
     model_parameter_file = "mlruns/0/"+run_id+"/params/"
 
     with open(model_parameter_file+"Number_of_selected_neighbours","r") as f:
@@ -49,19 +56,27 @@ def log_params(run_id):
     mlflow.log_param("Trainset_size", model_testset_size)
 
 def load_model(model_uri):
+    '''loading a model from the mlruns folder, given a run_id'''
+
     logged_model = "runs:/"+model_run_id+'/knn_model'
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pyfunc.load_model(logged_model)
     
     return loaded_model
 
-model_run_id = "d51c7a19574240ecb8e03559d9b61a82"
+def scaling_data(test_df):
+    '''preparing and scaling the test data'''
+    
+    x_test=test_df.drop('Survived', axis = 1)
+    #using the sklearn standardscaler
+    scaler= StandardScaler()
+    scaler.fit(x_test)
+    x_test= scaler.transform(x_test)
+    y_test=test_df['Survived']
+    return x_test,y_test
 
 test_df = pd.read_csv("https://gist.githubusercontent.com/Inwernos/718cbf951b7c5bfc7060801824e64a3c/raw/42fec3053c3532fd521403302bc9e00714e3a26d/Titanic_test_dataset.csv")
-x_test=test_df.drop('Survived', axis = 1)
-scaler= StandardScaler()
-scaler.fit(x_test)
-x_test= scaler.transform(x_test)
-y_test=test_df['Survived']
-
+x_test, y_test = scaling_data(test_df)
+# run_id was figured out through hyperparameter testing
+model_run_id = "d51c7a19574240ecb8e03559d9b61a82"
 accuracy, matrix = test_evaluate_model(model_run_id)
