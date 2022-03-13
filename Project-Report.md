@@ -162,8 +162,7 @@ gesamte Intervall der natürlichen Zahlen von 1 bis 534 (Länge des
 Trainingsdatensatzes) getestet.
 
 Als Ergebnis dieser Optimierung ist in Mlflow folgende Grafik
-entstanden: ![](media/image1.png){width="6.5in"
-height="3.903041338582677in"}
+entstanden: ![image info](./images/KNN_hyperparametertuning.png)
 
 Aus der Grafik lässt sich ableiten, dass der Parameter mit der besten
 Accuracy auf den Validierungsdaten bei 21 betrachteten nächsten Nachbarn
