@@ -64,10 +64,10 @@ def feature_scaling() -> pd.DataFrame:
 
     return scaled_x_train,scaled_x_validate,scaled_x_test
     
-def train_knn(x_train: pd.DataFrame,y_train: pd.DataFrame,knn_param: int) -> KNeighborsClassifier:
+def train_knn(x_train: pd.DataFrame,y_train: pd.DataFrame,knn_param: int, p_distance: int) -> KNeighborsClassifier:
     '''fuctions trains the KNN model with a given hyperparameter of the used next neighbors'''
 
-    knn_model=KNeighborsClassifier(n_neighbors=knn_param)
+    knn_model=KNeighborsClassifier(n_neighbors=knn_param, p=p_distance)
     knn_model.fit(x_train, y_train)
     return knn_model
 
@@ -85,36 +85,41 @@ def validation_evaluate_model(model: KNeighborsClassifier) -> Tuple[float,np.nda
 def hyperparameter_testing():
     '''function trains and evaluates the model with all possible hyperparameters and stores results in a mlflow experiment'''
 
-    for knn_parameter in range(1,len(x_train)+1):
-        with mlflow.start_run():
+    for p_distance in range(1,3):
+        if p_distance == 2:
+            mlflow.set_experiment("Default")
+        else:
+            mlflow.set_experiment("p=1_testing")
+        for knn_parameter in range(1,len(x_train)+1):
+            with mlflow.start_run():
 
-            #logging the model parameter
-            mlflow.log_param("Random_state", 42)
-            mlflow.log_param("Trainset_size", len(x_train))
-            mlflow.log_param("Validationset_size",len(x_validate))
-            knn_hyperparameter = knn_parameter
-            mlflow.log_param("Number_of_selected_neighbours", knn_hyperparameter)
+                #logging the model parameter
+                mlflow.log_param("Random_state", 42)
+                mlflow.log_param("Trainset_size", len(x_train))
+                mlflow.log_param("Validationset_size",len(x_validate))
+                knn_hyperparameter = knn_parameter
+                mlflow.log_param("Number_of_selected_neighbours", knn_hyperparameter)
 
-            #training and evaluating the KNN model
-            knn_model = train_knn(x_train,y_train,knn_hyperparameter)
-            accuracy, matrix = validation_evaluate_model(knn_model)
+                #training and evaluating the KNN model
+                knn_model = train_knn(x_train,y_train,knn_hyperparameter,p_distance)
+                accuracy, matrix = validation_evaluate_model(knn_model)
 
-            # logging evaluation metrics and the model itself
-            mlflow.log_metric("Accuracy",accuracy)
-            true_positive = matrix[0][0]
-            true_negative = matrix[1][1]
-            false_positive = matrix[0][1]
-            false_negative = matrix[1][0]
-            mlflow.log_metric("true_positive", true_positive)
-            mlflow.log_metric("true_negative", true_negative)
-            mlflow.log_metric("false_positive", false_positive)
-            mlflow.log_metric("false_negative", false_negative)
-            mlflow.sklearn.log_model(knn_model, "knn_model")
+                # logging evaluation metrics and the model itself
+                mlflow.log_metric("Accuracy",accuracy)
+                true_positive = matrix[0][0]
+                true_negative = matrix[1][1]
+                false_positive = matrix[0][1]
+                false_negative = matrix[1][0]
+                mlflow.log_metric("true_positive", true_positive)
+                mlflow.log_metric("true_negative", true_negative)
+                mlflow.log_metric("false_positive", false_positive)
+                mlflow.log_metric("false_negative", false_negative)
+                mlflow.sklearn.log_model(knn_model, "knn_model")
 
-            # printing out each run with their hyperparameter and accuracy metrik
-            print(str(knn_hyperparameter) +" "+str(accuracy))
+                # printing out each run with their hyperparameter and accuracy metrik
+                print(str(knn_hyperparameter) +" "+str(accuracy))
 
-            mlflow.end_run()
+                mlflow.end_run()
 
 df = load_data()
 df_cleaned = data_cleaning()

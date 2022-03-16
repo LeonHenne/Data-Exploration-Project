@@ -124,9 +124,7 @@ funktioniert nach dem Prinzip, dass die K nächsten Nachbarn, des zu
 klassifizierenden Punktes betrachtet werden, um das in der Mehrheit
 vorliegende Label dem neuen Punkt zuzuweisen. Hierfür muss jeder Punkt,
 sowie jeder Abstand von jedem Punkt zu allen anderen Punkten berechnet
-und gespeichert werden. Die Anzahl der betrachteten Nachbarn stellt bei
-diesem Algorithmus einen Hyperparameter dar, welcher im späteren Kapitel
-optimiert wird.
+und gespeichert werden. Die Anzahl der betrachteten Nachbarn sowie Parameter p, die Abstandsmessung nach Manhattan- oder euklidischem Abstand, stellen bei diesem Algorithmus die Hyperparameter dar, welcher im späteren Kapitel optimiert werden.
 
 ### Auswahl der Metriken
 
@@ -156,7 +154,7 @@ gespeichert.
 ### Optimierung der Hyperparameter
 
 Zur Optimierung des Hyperparameters, wie viele Nachbarn bei der
-Zuweisung eines Labels zu betrachten sind, wird der beschriebene
+Zuweisung eines Labels zu betrachten sind, unter dem euklidischen Abstand wird der beschriebene
 Trainings- und Validierungsprozess mehrfach durchgeführt. Dabei wird das
 gesamte Intervall der natürlichen Zahlen von 1 bis 534 (Länge des
 Trainingsdatensatzes) getestet.
@@ -168,7 +166,9 @@ Aus der Grafik lässt sich ableiten, dass der Parameter mit der besten
 Accuracy auf den Validierungsdaten bei 21 betrachteten nächsten Nachbarn
 liegt. Folglich wird das Model aus dem Lauf mit der RunID
 „d51c7a19574240ecb8e03559d9b61a82" für die weitere Evaluation auf den
-Testdaten verwendet.
+Testdaten in Betracht gezogen.
+
+Diese Optimierung wird wiederholt unter der Verwendung des Manhattan Abstandes. Der in dieser Optimierung beste Lauf (Run fa5b7a1ae736454fb8816aaa71ff9aa5) weist dabei allerdings mit 85,4% eine um 0,6% geringere Accuracy auf als der bisherige optimale Lauf. Daher wird der zuerst als der Parameter p auf den Standardwert zwei gesetzt, und mit dem ursprünglich optimalen Lauf fortgefahren.
 
 ### Evaluation auf den Testdaten ([DemoLink](https://colab.research.google.com/drive/1TrmB_XJCIk3vPSdiMGtkg1J3X44A8gvZ?usp=sharing))
 
